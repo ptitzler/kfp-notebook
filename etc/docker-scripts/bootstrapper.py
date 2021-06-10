@@ -622,7 +622,7 @@ def main():
     argv = sys.argv[1:]
     run_id = os.environ.get('KFP_RUN_ID')
     if run_id:
-        argv.append('--kfp_run_id')
+        argv.append('--kfp-run-id')
         argv.append(run_id)
 
     input_params = OpUtil.parse_arguments(argv)
