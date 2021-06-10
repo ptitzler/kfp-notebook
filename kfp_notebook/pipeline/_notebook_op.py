@@ -250,6 +250,8 @@ class NotebookOp(ContainerOp):
             elyra_run_id_val = f'{self.pipeline_name}-{RUN_ID_PLACEHOLDER}'
         self.container.add_env_variable(V1EnvVar(name='ELYRA_RUN_ID',
                                                  value=elyra_run_id_val))
+        self.container.add_env_variable(V1EnvVar(name='KFP_RUN_ID',
+                                                 value=f'{RUN_ID_PLACEHOLDER}'))
 
         # Attach metadata to the pod
         # Node type (a static type for this op)

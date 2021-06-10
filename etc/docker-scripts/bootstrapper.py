@@ -275,6 +275,17 @@ class FileOpBase(ABC):
         """
         return os.path.join(self.input_params.get('cos-directory', ''), filename)
 
+    def get_object_storage_output_filename(self, filename: str) -> str:
+        """Function to pre-pend cloud storage output dir to file name
+
+        :param filename: the local file
+        :return: the full path of the object storage file
+        """
+        return os.path.join(self.input_params.get('cos-directory', ''),
+                            self.input_params.get('kfp-run-id','')
+                            filename)
+
+
     def get_file_from_object_storage(self, file_to_get: str) -> None:
         """Utility function to get files from an object storage
 
@@ -301,7 +312,7 @@ class FileOpBase(ABC):
         if not object_to_upload:
             object_to_upload = file_to_upload
 
-        object_to_upload = self.get_object_storage_filename(object_to_upload)
+        object_to_upload = self.get_object_storage_output_filename(object_to_upload)
         t0 = time.time()
         self.cos_client.fput_object(bucket_name=self.cos_bucket,
                                     object_name=object_to_upload,
@@ -571,6 +582,7 @@ class OpUtil(object):
         parser.add_argument('-i', '--inputs', dest="inputs", help='Files to pull in from parent node', required=False)
         parser.add_argument('-p', '--user-volume-path', dest="user-volume-path",
                             help='Directory in Volume to install python libraries into', required=False)
+        parser.add_argument('--kfp-run-id', dest="kfp-run-id", required=False)
         parsed_args = vars(parser.parse_args(args))
 
         # cos-directory is the pipeline name, set as global
@@ -606,7 +618,15 @@ def main():
                         datefmt='%H:%M:%S',
                         level=logging.DEBUG)
     # Setup packages and gather arguments
-    input_params = OpUtil.parse_arguments(sys.argv[1:])
+
+    argv = sys.argv[1:]
+    run_id = os.environ.get('KFP_RUN_ID')
+    if run_id:
+        argv.append('--kfp_run_id')
+        argv.append(run_id)
+
+    input_params = OpUtil.parse_arguments(argv)
+
     OpUtil.log_operation_info("starting operation")
     t0 = time.time()
     OpUtil.package_install(user_volume_path=input_params.get('user-volume-path'))
