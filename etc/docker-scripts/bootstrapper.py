@@ -282,7 +282,7 @@ class FileOpBase(ABC):
         :return: the full path of the object storage file
         """
         return os.path.join(self.input_params.get('cos-directory', ''),
-                            self.input_params.get('kfp-run-id','')
+                            self.input_params.get('kfp-run-id',''),
                             filename)
 
 
